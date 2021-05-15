@@ -129,11 +129,13 @@ for i =1:length(StartingFileName)
             end
         end
     end
+    
     [nev,evnames] = plx_event_names(OpenedFileName);
     
     file_name = string(StartingFileName(i).name).split('.plx');
-    save(string('../Output files/')+string(file_name{1}) + '.mat');
-
+    save_name = string('../Output files/')+string(file_name{1}) + '.mat';
+    save(save_name,'adfreq','adfreqs','adgains','adnames','allad','allts');
+    
     nameFiles2delete(i) = string(StartingFileName(i).name);
 end
 
