@@ -103,13 +103,13 @@ for i =1:length(StartingFileName)
         numPlots = min(4, numads);
         for ich = 1:nslowchannels
             [ nsamples, u ] = size(allad{ich});
-%             if ( nsamples > 0 )
-%                 subplot(numPlots,1,iplot); plot(allad{ich});
-%                 iplot = iplot + 1;
-%             end
-%             if iplot > numPlots
-%                break;
-%             end
+            if ( nsamples > 0 )
+                subplot(numPlots,1,iplot); plot(allad{ich});
+                iplot = iplot + 1;
+            end
+            if iplot > numPlots
+               break;
+            end
         end
     end
 
@@ -129,11 +129,13 @@ for i =1:length(StartingFileName)
             end
         end
     end
+    
     [nev,evnames] = plx_event_names(OpenedFileName);
     
     file_name = string(StartingFileName(i).name).split('.plx');
-    save(string('../Output files/')+string(file_name{1}) + '.mat');
-
+    save_name = string('../Output files/')+string(file_name{1}) + '_lfp.mat';
+    save(save_name,'adfreq','adfreqs','adgains','adnames','allad','allts');
+    
     nameFiles2delete(i) = string(StartingFileName(i).name);
 end
 

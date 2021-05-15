@@ -12,12 +12,14 @@ rotina = int(input("Digite o número da rotina escolhida: "))
 print('Carregando o Matlab e executando o script de conversão...','\n')
 if rotina == 1:
     os.system('matlab -batch readall')
+    print('\n')
     print('Conversão realizada com sucesso!','\n')
 elif rotina == 2:
-    os.system('matlab -batch lfp_only')
+    os.system('matlab -batch extract_lfp')
+    print('\n')
     print('Conversão realizada com sucesso!','\n')
 else:
-    print('A rotina selecionada não existe, reinicie o programa.')
+    print('A rotina selecionada não existe, reinicie o programa.','\n')
 print('\n')
 print('Programa finalizado.','\n')
-time.sleep(20)
+time.sleep(30)
