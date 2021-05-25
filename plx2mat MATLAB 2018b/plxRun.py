@@ -21,5 +21,6 @@ elif rotina == 2:
 else:
     print('A rotina selecionada não existe, reinicie o programa.','\n')
 print('\n')
-print('Programa finalizado.','\n')
+
+print('O programa será finalizado')  
 time.sleep(30)

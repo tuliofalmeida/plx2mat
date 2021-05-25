@@ -8,8 +8,8 @@ clear all; clc
 path = '../Input files/';
 StartingFileName = dir([path,'\*.plx']);
 % cd(originalpath)
-
 for i =1:length(StartingFileName)
+    tic;
     copyfile(path+string(StartingFileName(i).name))
     [OpenedFileName, Version, Freq, Comment, Trodalness, NPW, PreThresh, SpikePeakV, SpikeADResBits, SlowPeakV, SlowADResBits, Duration, DateTime] = plx_information(StartingFileName(i).name);
 
@@ -130,16 +130,22 @@ for i =1:length(StartingFileName)
         end
     end
     [nev,evnames] = plx_event_names(OpenedFileName);
-    
+     
     file_name = string(StartingFileName(i).name).split('.plx');
-    save(string('../Output files/')+string(file_name{1}) + '.mat');
+    
+    save(string('../Output files/')+string(file_name{1}) + '_data.mat','-v7.3');
+    save(string('../Output files/')+string(file_name{1}) + '_head.mat','-regexp','^(?!(allad)$).');
+    
+    tempo = toc;
+    disp('Tempo gasto em ' + string(StartingFileName(i).name) + ': ' + tempo)
+    
+    fileID = fopen(string('../Output files/')+string(file_name{1}) + '_Tempo.txt','w');
+    fprintf(fileID,'Tempo gasto: %s',tempo);
+    fclose(fileID);
+    
+    plx_close(StartingFileName(i).name);
+    delete(StartingFileName(i).name);
 
-    nameFiles2delete(i) = string(StartingFileName(i).name);
 end
 
-save('names.mat','nameFiles2delete')
-clear all; clc
-load('names.mat')
-for i = 1:length(nameFiles2delete)
-    delete(nameFiles2delete(i))
-end
+%exit;

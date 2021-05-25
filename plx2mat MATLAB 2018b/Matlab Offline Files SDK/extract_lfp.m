@@ -10,6 +10,7 @@ StartingFileName = dir([path,'\*.plx']);
 % cd(originalpath)
 
 for i =1:length(StartingFileName)
+    tic
     copyfile(path+string(StartingFileName(i).name))
     [OpenedFileName, Version, Freq, Comment, Trodalness, NPW, PreThresh, SpikePeakV, SpikeADResBits, SlowPeakV, SlowADResBits, Duration, DateTime] = plx_information(StartingFileName(i).name);
 
@@ -52,21 +53,21 @@ for i =1:length(StartingFileName)
 
     % gives actual number of units (including unsorted) and actual number of
     % channels plus 1
-%     [nunits1, nchannels1] = size( tscounts );   
+    [nunits1, nchannels1] = size( tscounts );   
 
     % we will read in the timestamps of all units,channels into a two-dim cell
     % array named allts, with each cell containing the timestamps for a unit,channel.
     % Note that allts second dim is indexed by the 1-based channel number.
     % preallocate for speed
-%     allts = cell(nunits1, nchannels1);
-%     for iunit = 0:nunits1-1   % starting with unit 0 (unsorted) 
-%         for ich = 1:nchannels1-1
-%             if ( tscounts( iunit+1 , ich+1 ) > 0 )
-%                 % get the timestamps for this channel and unit 
-%                 [nts, allts{iunit+1,ich}] = plx_ts(OpenedFileName, ich , iunit );
-%              end
-%         end
-%     end
+    allts = cell(nunits1, nchannels1);
+    for iunit = 0:nunits1-1   % starting with unit 0 (unsorted) 
+        for ich = 1:nchannels1-1
+            if ( tscounts( iunit+1 , ich+1 ) > 0 )
+                % get the timestamps for this channel and unit 
+                [nts, allts{iunit+1,ich}] = plx_ts(OpenedFileName, ich , iunit );
+             end
+        end
+    end
 
     % get some other info about the spike channels
 %     [nspk,spk_filters] = plx_chan_filters(OpenedFileName);
@@ -87,7 +88,7 @@ for i =1:length(StartingFileName)
         allad = cell(1,nslowchannels);
         for ich = 0:nslowchannels-1
             if ( slowcounts(ich+1) > 0 )
-                [adfreq, allad{ich+1}] = plx_ad(OpenedFileName, ich);
+                [adfreq, nad, tsad, fnad, allad{ich+1}] = plx_ad(OpenedFileName, ich);
                 numads = numads + 1;
             end
         end
@@ -113,7 +114,7 @@ for i =1:length(StartingFileName)
         end
     end
 
-    % and finally the events
+%     % and finally the events
 %     [u,nevchannels] = size( evcounts );  
 %     if ( nevchannels > 0 ) 
 %         % need the event chanmap to make any sense of these
@@ -129,19 +130,34 @@ for i =1:length(StartingFileName)
 %             end
 %         end
 %     end
-%     
 %     [nev,evnames] = plx_event_names(OpenedFileName);
     
     file_name = string(StartingFileName(i).name).split('.plx');
     save_name = string('../Output files/')+string(file_name{1}) + '_lfp.mat';
-    save(save_name,'adfreq','adfreqs','adgains','adnames','allad');
     
-    nameFiles2delete(i) = string(StartingFileName(i).name);
+    x = cellstr(adnames);
+    size_lfp = size(allad);
+    if size_lfp(2) == 96
+        lfp_data = allad(65:96);
+        lfp_name = x(65:96);
+    elseif size_lfp(2) == 192
+        lfp_data = allad(129:192);
+        lfp_name = x(129:192);        
+    end
+    
+    save(save_name,'lfp_data','-v7.3');
+    save(string('../Output files/')+string(file_name{1}) + '_lfp_head.mat','adfreq','adgains','adnames','lfp_name');
+    
+    tempo = toc;
+    disp('Tempo gasto em ' + string(StartingFileName(i).name) + ': ' + tempo) 
+     
+    fileID = fopen(string('../Output files/')+string(file_name{1}) + '_lfp_Tempo.txt','w');
+    fprintf(fileID,'Tempo gasto: %s',tempo);
+    fclose(fileID);
+    
+    plx_close(string(StartingFileName(i).name));
+    delete(string(StartingFileName(i).name));
+    
 end
 
-save('names.mat','nameFiles2delete')
-clear all; clc
-load('names.mat')
-for i = 1:length(nameFiles2delete)
-    delete(nameFiles2delete(i))
-end
+%exit;
